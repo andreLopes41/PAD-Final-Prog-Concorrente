@@ -45,27 +45,36 @@ def buscar_jogos_steam(termo):
         jogos = []
         
         resultados = soup.find_all('a', class_='search_result_row')
+
+        termos_busca = set(termo.lower().split())
         
         for item in resultados:
             try:
+
                 nome = item.find('span', class_='title').text.strip()
-                preco_element = item.find('div', class_='discount_final_price')
-                preco = preco_element.text.strip() if preco_element else "Preço não disponível"
+
+                nome_palavras = set(nome.lower().split())
                 
-                img_element = item.find('img')
-                imagem = img_element['src'] if img_element else ""
+                palavras_encontradas = termos_busca.intersection(nome_palavras)
                 
-                data_lancamento, distribuidora = buscar_detalhes_jogo_steam(item['href'])
-                
-                jogos.append({
-                    'nome': nome,
-                    'plataforma': 'Steam',
-                    'link': item['href'],
-                    'imagem': imagem,
-                    'lancamento': data_lancamento,
-                    'distribuidora': distribuidora,
-                    'preco': preco
-                })
+                if len(palavras_encontradas) >= len(termos_busca) * 0.5:
+                    preco_element = item.find('div', class_='discount_final_price')
+                    preco = preco_element.text.strip() if preco_element else "Preço não disponível"
+                    
+                    img_element = item.find('img')
+                    imagem = img_element['src'] if img_element else ""
+                    
+                    data_lancamento, distribuidora = buscar_detalhes_jogo_steam(item['href'])
+                    
+                    jogos.append({
+                        'nome': nome,
+                        'plataforma': 'Steam',
+                        'link': item['href'],
+                        'imagem': imagem,
+                        'lancamento': data_lancamento,
+                        'distribuidora': distribuidora,
+                        'preco': preco
+                    })
             except Exception as e:
                 print(f"Erro ao processar jogo da Steam: {str(e)}")
                 continue
